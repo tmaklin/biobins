@@ -15,13 +15,17 @@ Simply enter the directory for the software and platform you wish to build
 for, and run the `compile.sh` script with the correct version number
 as the first argument:
 ```
-cd mSWEEP/linux
+cd linux/mSWEEP
 ./compile.sh 1.2.2
 ```
 which will create the `mSWEEP_linux-v1.2.2.tar.gz` archive in the
 current working directory, ready for distribution.
 
-## License
+## License (scripts)
 The source code from this project is subject to the terms of the
 MIT license. A copy of the MIT license is supplied with the
 project, or can be obtained at https://spdx.org/licenses/MIT.html
+
+## License (targets)
+* mSWEEP is licensed under the MIT license.
+* Themisto is licensed under the GPLv2 license.
