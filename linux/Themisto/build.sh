@@ -35,7 +35,6 @@ path=/io/tmp/$target
 mkdir $path
 cp bin/build_index $path/
 cp bin/pseudoalign $path/
-cp bin/themisto_tests $path/
 cp ../README.md $path/
 cp ../LICENSE.txt $path/
 cd /io/tmp
