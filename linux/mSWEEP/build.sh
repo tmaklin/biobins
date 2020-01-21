@@ -19,7 +19,7 @@ yum -y install git
 
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
-git clone https://github.com/PROBIC/mSWEEP.git
+git clone --recursive https://github.com/PROBIC/mSWEEP.git
 cd mSWEEP
 git checkout v${VER}
 
@@ -33,7 +33,8 @@ make VERBOSE=1
 target=mSWEEP_linux-v${VER}
 path=/io/tmp/$target
 mkdir $path
-cp ../mSWEEP $path/
+cp ../build/bin/mSWEEP $path/
+cp ../build/bin/matchfasta $path/
 cp ../README.md $path/
 cp ../LICENSE $path/
 cd /io/tmp
