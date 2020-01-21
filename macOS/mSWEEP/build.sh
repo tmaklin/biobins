@@ -12,7 +12,7 @@ cd tmp
 target=mSWEEP_macOS-v${VER}
 mkdir $target
 
-git clone https://github.com/PROBIC/mSWEEP.git
+git clone --recursive https://github.com/PROBIC/mSWEEP.git
 cd mSWEEP
 git checkout v${VER}
 mkdir build
@@ -21,7 +21,8 @@ cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-ma
 make VERBOSE=1
 
 cd ../../
-cp mSWEEP/mSWEEP $target/
+cp mSWEEP/build/bin/mSWEEP $target/
+cp mSWEEP/build/bin/matchfasta $target/
 cp mSWEEP/LICENSE $target/
 cp mSWEEP/README.md $target/
 
