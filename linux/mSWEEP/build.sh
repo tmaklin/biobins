@@ -19,7 +19,7 @@ yum -y install git
 
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
-git clone --recursive https://github.com/PROBIC/mSWEEP.git
+git clone https://github.com/PROBIC/mSWEEP.git
 cd mSWEEP
 git checkout v${VER}
 
