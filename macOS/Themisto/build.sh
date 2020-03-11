@@ -23,7 +23,6 @@ gsed -i "s/OpenMP::OpenMP_CXX/$openmp/g" CMakeLists.txt
 echo "target_compile_options(kmc_wrapper PRIVATE -fopenmp)
 target_compile_options(pseudoalign PRIVATE -fopenmp)
 target_compile_options(build_index PRIVATE -fopenmp)
-target_compile_options(themisto_tests PRIVATE -fopenmp)
 " >> CMakeLists.txt
 
 echo "target_compile_options(raduls_sse2 PRIVATE -fvisibility=hidden)
@@ -39,7 +38,6 @@ make VERBOSE=1 -j 4
 cd ../../
 cp Themisto/build/bin/pseudoalign $target/
 cp Themisto/build/bin/build_index $target/
-cp Themisto/build/bin/themisto_tests $target/
 cp Themisto/LICENSE.txt $target/
 cp Themisto/README.md $target/
 
