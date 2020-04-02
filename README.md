@@ -28,6 +28,7 @@ project, or can be obtained at https://spdx.org/licenses/MIT.html
 
 ## License (targets)
 * mSWEEP is licensed under the MIT license.
+* mGEMS is licensed under the MIT license.
 * sweepsim is licensed under the MIT license.
 * telescope is licensed under the LGPLv2.1 license.
 * Themisto is licensed under the GPLv2 license.
