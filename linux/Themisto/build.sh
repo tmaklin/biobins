@@ -20,7 +20,8 @@ yum -y install git
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
 
-git clone https://github.com/jnalanko/Themisto.git
+export PATH="/usr/bin:"$PATH
+git clone https://github.com/algbio/Themisto
 cd Themisto
 git checkout v${VER}
 
