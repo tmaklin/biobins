@@ -11,11 +11,11 @@ cd tmp
 
 target=themisto_macOS-v${VER}
 mkdir $target
-git clone https://github.com/jnalanko/Themisto.git
+git clone https://github.com/algbio/Themisto.git
 cd Themisto
 git checkout v${VER}
 
-openmp=$(g++-6 -print-file-name=libgomp.a)
+openmp=$(g++-9 -print-file-name=libgomp.a)
 openmp=${openmp//\//\\/}
 gsed -i "s/find_package(OpenMP REQUIRED)//g" CMakeLists.txt
 gsed -i "s/OpenMP::OpenMP_CXX/$openmp/g" CMakeLists.txt
@@ -32,7 +32,7 @@ target_compile_options(raduls_avx2 PRIVATE -fvisibility=hidden)
 " >> KMC/CMakeLists.txt
 
 cd build
-cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64 -fvisibility=hidden" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64 -fvisibility=hidden" -DCMAKE_C_COMPILER=$(which gcc-6) -DCMAKE_CXX_COMPILER=$(which g++-6) -DCMAKE_BUILD_ZLIB=1 -DCMAKE_BUILD_BZIP2=1 -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc -fvisibility=hidden" -DCMAKE_MODULE_LINKER_FLAGS="-static-libstdc++ -static-libgcc -fvisibility=hidden"  ..
+cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64 -fvisibility=hidden" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64 -fvisibility=hidden" -DCMAKE_C_COMPILER=$(which gcc-9) -DCMAKE_CXX_COMPILER=$(which g++-9) -DCMAKE_BUILD_ZLIB=1 -DCMAKE_BUILD_BZIP2=1 -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc -fvisibility=hidden" -DCMAKE_MODULE_LINKER_FLAGS="-static-libstdc++ -static-libgcc -fvisibility=hidden"  ..
 make VERBOSE=1 -j 4
 
 cd ../../
