@@ -17,6 +17,8 @@ set -x
 
 yum -y install git
 
+export PATH="/usr/bin:"$PATH
+
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/PROBIC/mSWEEP.git
