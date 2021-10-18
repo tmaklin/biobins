@@ -15,6 +15,8 @@ set -x
 
 yum -y install git
 
+export PATH="/usr/bin:"$PATH
+
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
 name=telescope
@@ -25,7 +27,7 @@ git checkout v${VER}
 # compile
 mkdir build
 cd build
-cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" ..
+cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" ..
 make VERBOSE=1
 
 # gather the stuff to distribute
