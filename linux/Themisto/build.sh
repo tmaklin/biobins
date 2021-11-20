@@ -24,6 +24,8 @@ export PATH="/usr/bin:"$PATH
 git clone https://github.com/algbio/Themisto
 cd Themisto
 git checkout v${VER}
+git submodule init
+git submodule update
 
 # compile
 cd build
@@ -34,8 +36,7 @@ make VERBOSE=1 -j 4
 target=themisto_linux-v${VER}
 path=/io/tmp/$target
 mkdir $path
-cp bin/build_index $path/
-cp bin/pseudoalign $path/
+cp bin/* $path/
 cp ../README.md $path/
 cp ../LICENSE.txt $path/
 cd /io/tmp
