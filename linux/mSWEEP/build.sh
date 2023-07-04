@@ -36,7 +36,7 @@ target=mSWEEP_linux-v${VER}
 path=/io/tmp/$target
 mkdir $path
 cp ../build/bin/mSWEEP $path/
-cp ../build/bin/matchfasta $path/
+cp ../CHANGELOG.md $path/
 cp ../README.md $path/
 cp ../LICENSE $path/
 cd /io/tmp
