@@ -7,7 +7,7 @@ docker run \
   --rm \
   -it \
   ghcr.io/shepherdjerred/macos-cross-compiler:latest \
-  /bin/bash /io/build2.sh $1 $2
+  /bin/bash /io/build.sh $1 $2
 
 rm $2-toolchain.cmake
 
