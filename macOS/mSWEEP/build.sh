@@ -1,4 +1,6 @@
 #!/bin/bash
+## Build script for cross-compiling mSWEEP for macOS x86-64 or arm64.
+## Call this from `compile_in_docker.sh` unless you know what you're doing.
 
 set -exo pipefail
 
@@ -14,7 +16,8 @@ if [[ -z $ARCH ]]; then
   exit;
 fi
 
-apt install -y cmake git
+apt update
+apt install -y cmake git libomp5 libomp-dev
 
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
