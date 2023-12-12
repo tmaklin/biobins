@@ -1,4 +1,8 @@
-VER=$1
+#!/bin/bash
+## Build script for cross-compiling mSWEEP for macOS x86-64 or arm64.
+## Call this from `compile_in_docker.sh` unless you know what you're doing.
+
+set -exo pipefail
 
 VER=$1
 if [[ -z $VER ]]; then
@@ -6,30 +10,54 @@ if [[ -z $VER ]]; then
   exit;
 fi
 
-mkdir tmp
-cd tmp
+ARCH=$2
+if [[ -z $ARCH ]]; then
+  echo "Error: specify architecture (one of x86-64,arm64)"
+  exit;
+fi
 
-target=mSWEEP_macOS-v${VER}
-mkdir $target
+apt update
+apt install -y cmake git libomp5 libomp-dev
 
+# Extract and enter source
+mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/PROBIC/mSWEEP.git
 cd mSWEEP
-git checkout v${VER}
+## git checkout v${VER}
+git checkout cross-compilation-compatibility
+
+# compile x86_64
 mkdir build
-
-gsed -i 's/find_package(LibLZMA)/set\(LIBLZMA_FOUND 0\)/g' CMakeLists.txt
-cat CMakeLists.txt
 cd build
-cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" ..
-make VERBOSE=1
+if [ "$ARCH" = "x86-64" ]; then
+    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
+          -DCMAKE_C_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DCMAKE_CXX_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DCMAKE_BUILD_WITH_FLTO=0  ..
+elif [ "$ARCH" = "arm64" ]; then
+    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
+          -DCMAKE_C_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DCMAKE_CXX_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DCMAKE_BUILD_WITH_FLTO=0  ..
+fi
+make VERBOSE=1 -j
 
-cd ../../
-cp mSWEEP/build/bin/mSWEEP $target/
-cp mSWEEP/build/bin/matchfasta $target/
-cp mSWEEP/LICENSE $target/
-cp mSWEEP/README.md $target/
-
+## gather the stuff to distribute
+target=mSWEEP_macos-$ARCH-v${VER}
+target=$(echo $target | sed 's/x86-64/x86_64/g')
+path=/io/tmp/$target
+mkdir $path
+cp ../build/bin/mSWEEP $path/
+cp ../CHANGELOG.md $path/
+cp ../README.md $path/
+cp ../LICENSE $path/
+cd /io/tmp
 tar -zcvf $target.tar.gz $target
-cd ..
-mv tmp/$target.tar.gz ./
-rm -rf tmp
+mv $target.tar.gz /io/
+cd /io/
+rm -rf tmp cache
+
