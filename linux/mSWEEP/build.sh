@@ -23,7 +23,7 @@ export PATH="/usr/bin:"$PATH
 mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/PROBIC/mSWEEP.git
 cd mSWEEP
-git checkout v${VER}
+git checkout ${VER}
 
 # compile
 mkdir build
@@ -32,7 +32,7 @@ cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS="-march=
 make VERBOSE=1
 
 # gather the stuff to distribute
-target=mSWEEP_linux-v${VER}
+target=mSWEEP-${VER}-$(gcc -v 2>&1 | grep "^Target" | cut -f2 -d':' | sed 's/[[:space:]]*//g')
 path=/io/tmp/$target
 mkdir $path
 cp ../build/bin/mSWEEP $path/
