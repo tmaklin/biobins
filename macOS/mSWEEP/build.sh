@@ -23,12 +23,13 @@ apt install -y cmake git libomp5 libomp-dev
 mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/PROBIC/mSWEEP.git
 cd mSWEEP
-## git checkout v${VER}
+## git checkout ${VER}
 git checkout cross-compilation-compatibility
 
 # compile x86_64
 mkdir build
 cd build
+target_arch=""
 if [ "$ARCH" = "x86-64" ]; then
     cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
           -DCMAKE_C_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
@@ -36,6 +37,7 @@ if [ "$ARCH" = "x86-64" ]; then
           -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
           -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
           -DCMAKE_BUILD_WITH_FLTO=0  ..
+    target_arch="x86_64-apple-darwin22"
 elif [ "$ARCH" = "arm64" ]; then
     cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
           -DCMAKE_C_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
@@ -43,12 +45,12 @@ elif [ "$ARCH" = "arm64" ]; then
           -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
           -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
           -DCMAKE_BUILD_WITH_FLTO=0  ..
+    target_arch="arm64-apple-darwin22"
 fi
 make VERBOSE=1 -j
 
 ## gather the stuff to distribute
-target=mSWEEP_macos-$ARCH-v${VER}
-target=$(echo $target | sed 's/x86-64/x86_64/g')
+target=mSWEEP-${VER}-$target_arch
 path=/io/tmp/$target
 mkdir $path
 cp ../build/bin/mSWEEP $path/
