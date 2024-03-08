@@ -23,7 +23,7 @@ apt install -y cmake git libomp5 libomp-dev
 mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/tmaklin/cpprate.git
 cd cpprate
-git checkout v${VER}
+git checkout ${VER}
 
 # compile x86_64
 mkdir build
@@ -48,10 +48,9 @@ fi
 make VERBOSE=1 -j
 
 # gather the stuff to distribute
-target=cpprate_macos-$ARCH-v${VER}
-target=$(echo $target | sed 's/x86-64/x86_64/g')
+target=cpprate-${VER}-$target_arch
 path=/io/tmp/$target
-mkdir $path
+mkdir -p $path
 cp ../build/bin/cpprate $path/
 cp ../README.md $path/
 cp ../LICENSE $path/
