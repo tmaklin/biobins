@@ -28,6 +28,7 @@ git checkout ${VER}
 # compile x86_64
 mkdir build
 cd build
+target_arch=""
 if [ "$ARCH" = "x86-64" ]; then
     cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
           -DCMAKE_C_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
@@ -36,6 +37,7 @@ if [ "$ARCH" = "x86-64" ]; then
           -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
           -DCMAKE_BUILD_WITH_FLTO=0 \
           -DCMAKE_BUILD_EXECUTABLE=1  ..
+    target_arch="x86_64-apple-darwin22"
 elif [ "$ARCH" = "arm64" ]; then
     cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
           -DCMAKE_C_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
@@ -44,6 +46,7 @@ elif [ "$ARCH" = "arm64" ]; then
           -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
           -DCMAKE_BUILD_WITH_FLTO=0 \
           -DCMAKE_BUILD_EXECUTABLE=1  ..
+    target_arch="arm64-apple-darwin22"
 fi
 make VERBOSE=1 -j
 
