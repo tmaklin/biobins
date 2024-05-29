@@ -23,8 +23,7 @@ apt install -y cmake git libomp5 libomp-dev
 mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/PROBIC/mSWEEP.git
 cd mSWEEP
-## git checkout ${VER}
-git checkout cross-compilation-compatibility
+git checkout ${VER}
 
 # compile x86_64
 mkdir build
