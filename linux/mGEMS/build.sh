@@ -33,21 +33,15 @@ cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS="-march=
 make VERBOSE=1 -j
 
 # gather the stuff to distribute
-target=mGEMS_linux-${VER}
+target=mGEMS-${VER}-$(gcc -v 2>&1 | grep "^Target" | cut -f2 -d':' | sed 's/[[:space:]]*//g')
 path=/io/tmp/$target
 mkdir $path
-cp ../build/bin/* $path/
+cp -rf ../docs $path/docs
+cp ../build/bin/mGEMS $path/
 cp ../README.md $path/
-
-# LICENSE and docs don't exist for old versions
-set +e
 cp ../LICENSE $path/
-cp -rf ../docs $path/
-set -e
-
 cd /io/tmp
 tar -zcvf $target.tar.gz $target
 mv $target.tar.gz /io/
 cd /io/
 rm -rf tmp cache
-
