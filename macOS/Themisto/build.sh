@@ -10,63 +10,95 @@ if [[ -z $VER ]]; then
   exit;
 fi
 
+ARCH=$2
+if [[ -z $ARCH ]]; then
+  echo "Error: specify architecture (one of x86-64,arm64)"
+  exit;
+fi
+
 apt update
-apt install -y cmake git libomp5 libomp-dev
+apt install -y cmake git libomp5 libomp-dev curl
 
 mkdir /io/tmp
 cd /io/tmp
 
+# Extract and enter source
 git clone https://github.com/algbio/Themisto.git
 cd Themisto
-git checkout v${VER}
+git checkout ${VER}
+git submodule update --init --recursive
 
-openmp=$(g++-9 -print-file-name=libgomp.a)
-openmp=${openmp//\//\\/}
-gsed -i "s/find_package(OpenMP REQUIRED)//g" CMakeLists.txt
-gsed -i "s/OpenMP::OpenMP_CXX/$openmp/g" CMakeLists.txt
+mkdir -p ggcat/.cargo
 
-echo "target_compile_options(kmc_wrapper PRIVATE -fopenmp)
-target_compile_options(pseudoalign PRIVATE -fopenmp)
-target_compile_options(build_index PRIVATE -fopenmp)
-" >> CMakeLists.txt
-
-echo "target_compile_options(raduls_sse2 PRIVATE -fvisibility=hidden)
-target_compile_options(raduls_sse41 PRIVATE -fvisibility=hidden)
-target_compile_options(raduls_avx PRIVATE -fvisibility=hidden)
-target_compile_options(raduls_avx2 PRIVATE -fvisibility=hidden)
-" >> KMC/CMakeLists.txt
+sed 's/cargo build/cargo build/g' ggcat/crates/capi/ggcat-cpp-api/Makefile > Makefile.tmp
+mv Makefile.tmp ggcat/crates/capi/ggcat-cpp-api/Makefile
 
 cd build
-
+target_arch=""
 if [ "$ARCH" = "x86-64" ]; then
-    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
+    # Rust toolchain
+    rustup target add x86_64-apple-darwin
+
+    echo "[build]" >> ../ggcat/.cargo/config.toml
+    echo "target = \"x86_64-apple-darwin\"" >> ../ggcat/.cargo/config.toml
+    echo "[target.x86_64-apple-darwin]" >> ../ggcat/.cargo/config.toml
+    echo "linker = \"x86_64-apple-darwin22-gcc\"" >> ../ggcat/.cargo/config.toml
+
+    export CC="x86_64-apple-darwin22-gcc"
+    export CXX="x86_64-apple-darwin22-g++"
+
+    sed "s/cargo build/RUSTFLAGS='-L \/osxcross\/SDK\/MacOSX13.0.sdk\/usr\/lib' cargo build --target x86_64-apple-darwin/g" ../ggcat/crates/capi/ggcat-cpp-api/Makefile | sed 's/target\/release/target\/x86_64-apple-darwin\/release/g' | sed 's/fPIE/fPIE -march=x86-64 -mtune=generic -m64 -fPIC/g' | sed 's/ar cr/\/gcc\/bin\/x86_64-apple-darwin22-gcc-ar cr/g' > Makefile.tmp
+    mv Makefile.tmp ../ggcat/crates/capi/ggcat-cpp-api/Makefile
+
+    # compile x86_64
+    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain_GNU.cmake" \
           -DCMAKE_C_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
           -DCMAKE_CXX_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
           -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
-          -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DZLIB="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+	  -DZLIB_LIBRARY=="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" \
 	  -DMAX_KMER_LENGTH=31 \
-          -DCMAKE_BUILD_WITH_FLTO=0  ..
+	  ..
+    target_arch="x86_64-apple-darwin22"
 elif [ "$ARCH" = "arm64" ]; then
-    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
-          -DCMAKE_C_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
-          -DCMAKE_CXX_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
+    # Rust toolchain
+    rustup target add aarch64-apple-darwin
+
+    echo "[build]" >> ../ggcat/.cargo/config.toml
+    echo "target = \"aarch64-apple-darwin\"" >> ../ggcat/.cargo/config.toml
+    echo "[target.aarch64-apple-darwin]" >> ../ggcat/.cargo/config.toml
+    echo "linker = \"aarch64-apple-darwin22-gcc\"" >> ../ggcat/.cargo/config.toml
+
+    export CC="aarch64-apple-darwin22-gcc"
+    export CXX="aarch64-apple-darwin22-g++"
+
+    sed "s/cargo build/RUSTFLAGS='-L \/osxcross\/SDK\/MacOSX13.0.sdk\/usr\/lib' cargo build --target aarch64-apple-darwin/g" ../ggcat/crates/capi/ggcat-cpp-api/Makefile | sed 's/target\/release/target\/aarch64-apple-darwin\/release/g' | sed 's/fPIE/fPIE -march=x86-64 -mtune=generic -m64 -fPIC/g' | sed 's/ar cr/\/gcc\/bin\/aarch64-apple-darwin22-gcc-ar cr/g' > Makefile.tmp
+    mv Makefile.tmp ../ggcat/crates/capi/ggcat-cpp-api/Makefile
+
+    # compile aarch64
+    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain_GNU.cmake" \
+          -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic -m64 -fPIC -fPIE" \
+          -DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic -m64 -fPIC -fPIE" \
           -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
-          -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DZLIB="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+	  -DZLIB_LIBRARY=="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" \
 	  -DMAX_KMER_LENGTH=31 \
-          -DCMAKE_BUILD_WITH_FLTO=0 ..
+	  ..
+    target_arch="aarch64-apple-darwin22"
 fi
+
 make VERBOSE=1 -j
 
-target=themisto_macOS-v${VER}
-mkdir $target
-
-cd ../../
-cp Themisto/build/bin/pseudoalign $target/
-cp Themisto/build/bin/build_index $target/
-cp Themisto/LICENSE.txt $target/
-cp Themisto/README.md $target/
-
+## gather the stuff to distribute
+target=themisto-${VER}-$target_arch
+path=/io/tmp/$target
+mkdir $path
+cp ../build/bin/themisto $path/
+cp ../README.md $path/
+cp ../LICENSE.txt $path/
+cd /io/tmp
 tar -zcvf $target.tar.gz $target
-cd ..
-mv tmp/$target.tar.gz ./
-rm -rf tmp
+mv $target.tar.gz /io/
+cd /io/
+rm -rf tmp cache
+
