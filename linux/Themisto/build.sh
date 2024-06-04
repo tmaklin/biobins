@@ -23,20 +23,19 @@ mkdir /io/tmp && cd /io/tmp
 export PATH="/usr/bin:"$PATH
 git clone https://github.com/algbio/Themisto
 cd Themisto
-git checkout v${VER}
-git submodule init
-git submodule update
+git checkout ${VER}
+git submodule update --init --recursive
 
 # compile
 cd build
-cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_BUILD_BZIP2=1 -DCMAKE_BUILD_TYPE=Release ..
-make VERBOSE=1 -j 4
+cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_BUILD_TYPE=Release -DMAX_KMER_LENGTH=31 ..
+make VERBOSE=1 -j
 
 # gather the stuff to distribute
-target=themisto_linux-v${VER}
+target=themisto-${VER}-$(gcc -v 2>&1 | grep "^Target" | cut -f2 -d':' | sed 's/[[:space:]]*//g')
 path=/io/tmp/$target
 mkdir $path
-cp bin/* $path/
+cp ../build/bin/themisto $path/
 cp ../README.md $path/
 cp ../LICENSE.txt $path/
 cd /io/tmp
