@@ -1,8 +1,9 @@
 #!/bin/bash
 
-set -e
+## Build script for cross-compiling mSWEEP for macOS x86-64 or arm64.
+## Call this from `compile_in_docker.sh` unless you know what you're doing.
 
-VER=$1
+set -exo pipefail
 
 VER=$1
 if [[ -z $VER ]]; then
@@ -10,35 +11,55 @@ if [[ -z $VER ]]; then
   exit;
 fi
 
-mkdir tmp
-cd tmp
+ARCH=$2
+if [[ -z $ARCH ]]; then
+  echo "Error: specify architecture (one of x86-64,arm64)"
+  exit;
+fi
 
-target=mGEMS_macOS-v${VER}
-mkdir $target
+apt update
+apt install -y cmake git libomp5 libomp-dev
 
+# Extract and enter source
+mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/PROBIC/mGEMS.git
 cd mGEMS
-git checkout v${VER}
-git submodule update --init --recursive
-mkdir build
+git checkout ${VER}
 
-gsed -i 's/find_package(LibLZMA)/set\(LIBLZMA_FOUND 0\)/g' CMakeLists.txt
+sed -i 's/v0.6.0/build-system-patch-1/g' config/CMakeLists-telescope.txt.in
+
+# compile x86_64
+mkdir build
 cd build
-cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" ..
-gsed -i 's/BXZSTR_LZMA_SUPPORT 1/BXZSTR_LZMA_SUPPORT 0/g' external/bxzstr/include/config.hpp
+target_arch=""
+if [ "$ARCH" = "x86-64" ]; then
+    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
+          -DCMAKE_C_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DCMAKE_CXX_FLAGS="-march=$ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DCMAKE_BUILD_WITH_FLTO=0  ..
+    target_arch="x86_64-apple-darwin22"
+elif [ "$ARCH" = "arm64" ]; then
+    cmake -DCMAKE_TOOLCHAIN_FILE="/io/$ARCH-toolchain.cmake" \
+          -DCMAKE_C_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DCMAKE_CXX_FLAGS="-arch $ARCH -mtune=generic -m64 -fPIC -fPIE" \
+          -DBZIP2_LIBRARIES="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libbz2.tbd" -DBZIP2_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DZLIB_LIBRARY="/osxcross/SDK/MacOSX13.0.sdk/usr/lib/libz.tbd" -DZLIB_INCLUDE_DIR="/osxcross/SDK/MacOSX13.0.sdk/usr/include" \
+          -DCMAKE_BUILD_WITH_FLTO=0  ..
+    target_arch="arm64-apple-darwin22"
+fi
 make VERBOSE=1 -j
 
-cd ../../
-cp mGEMS/build/bin/* $target/
-cp mGEMS/README.md $target/
-
-# LICENSE and docs don't exist for old versionsb
-set +e
-cp mGEMS/LICENSE $target/
-cp -rf mGEMS/docs $target/
-set -e
-
+## gather the stuff to distribute
+target=mGEMS-${VER}-$target_arch
+path=/io/tmp/$target
+mkdir -p $path
+cp ../build/bin/mGEMS $path/
+cp ../README.md $path/
+cp ../LICENSE $path/
+cd /io/tmp
 tar -zcvf $target.tar.gz $target
-cd ..
-mv tmp/$target.tar.gz ./
-rm -rf tmp
+mv $target.tar.gz /io/
+cd /io/
+rm -rf tmp cache
