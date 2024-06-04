@@ -26,8 +26,6 @@ git clone https://github.com/PROBIC/mGEMS.git
 cd mGEMS
 git checkout ${VER}
 
-sed -i 's/v0.6.0/build-system-patch-1/g' config/CMakeLists-telescope.txt.in
-
 # compile x86_64
 mkdir build
 cd build
