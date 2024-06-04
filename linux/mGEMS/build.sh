@@ -23,7 +23,7 @@ export PATH="/usr/bin:"$PATH
 mkdir /io/tmp && cd /io/tmp
 git clone https://github.com/PROBIC/mGEMS.git
 cd mGEMS
-git checkout v${VER}
+git checkout ${VER}
 git submodule update --init --recursive
 
 # compile
@@ -33,7 +33,7 @@ cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS="-march=
 make VERBOSE=1 -j
 
 # gather the stuff to distribute
-target=mGEMS_linux-v${VER}
+target=mGEMS_linux-${VER}
 path=/io/tmp/$target
 mkdir $path
 cp ../build/bin/* $path/
