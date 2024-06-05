@@ -33,6 +33,10 @@ export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
 yum -y install curl libcurl-devel
 yum -y install git
 
+## Overwrite HBB git which doesn't support https
+rm --force /hbb/bin/git
+ln -s /usr/bin/git /hbb/bin/git
+
 ## Setup rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 chmod +x rustup.sh
