@@ -22,6 +22,8 @@ source /hbb_exe/activate
 export LDFLAGS="-L/lib64 -static-libstdc++"
 set -x
 
+export PATH="/opt/rh/devtoolset-10/root/usr/bin":$PATH
+
 ## Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 chmod +x rustup.sh
