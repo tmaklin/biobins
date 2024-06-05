@@ -1,6 +1,7 @@
 #!/bin/bash
-
-# Based on https://pmelsted.wordpress.com/2015/10/14/building-binaries-for-bioinformatics/
+## Build script for compiling Themisto for Linux x86-64.
+## Call this from `compile.sh` with the desired tag as the argument.
+## Adapted from the scripts in https://github.com/tmaklin/biobins
 
 set -e
 
@@ -22,11 +23,12 @@ source /hbb_exe/activate
 export LDFLAGS="-L/lib64 -static-libstdc++"
 set -x
 
+## Setup paths so cmake finds the correct toolchain
 export PATH="/opt/rh/devtoolset-10/root/usr/bin":$PATH
 export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
 export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
 
-## Rust
+## Setup rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 chmod +x rustup.sh
 export CARGO_HOME="$HOME/.cargo"
@@ -35,20 +37,21 @@ export RUSTUP_HOME="$HOME/.rustup"
 . "$HOME/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
 
-# Extract and enter source
+## Extract and enter source
 mkdir /io/tmp && cd /io/tmp
 
-export PATH="/usr/bin:"$PATH
+## Clone Themisto
 git clone https://github.com/tmaklin/Themisto
 cd Themisto
 git checkout ${VER}
 git submodule update --init --recursive
 
+## Specify target for cargo
 mkdir -p ggcat/.cargo
 echo "[build]" >> ggcat/.cargo/config.toml
 echo "target = \"x86_64-unknown-linux-gnu\"" >> ggcat/.cargo/config.toml
 
-# compile
+## Compile
 cd build
 cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
       -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" \
@@ -58,7 +61,7 @@ cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
 
 make VERBOSE=1 -j
 
-# gather the stuff to distribute
+## Gather distributable
 target=themisto-${VER}-$(gcc -v 2>&1 | grep "^Target" | cut -f2 -d':' | sed 's/[[:space:]]*//g')
 path=/io/tmp/$target
 mkdir $path
