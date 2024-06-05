@@ -11,8 +11,27 @@ if [[ -z $VER ]]; then
   exit;
 fi
 
+mkdir /io/tmp && cd /io/tmp
+
+yum -y install git
+
+## Clone Themisto
+git clone https://github.com/tmaklin/Themisto
+cd Themisto
+git checkout ${VER}
+git submodule update --init --recursive
+cd build
+cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
+      -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DROARING_DISABLE_NATIVE=ON \
+      -DMAX_KMER_LENGTH=31 ..
+
 ## Install git and gcc-10
-yum -y install git devtoolset-10-*
+yum -y install devtoolset-10-*
+yum -y update
+
+cd ../../
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
@@ -33,15 +52,10 @@ chmod +x rustup.sh
 export CARGO_HOME="/.cargo"
 export RUSTUP_HOME="/.rustup"
 ./rustup.sh -y --default-toolchain stable --profile minimal
+. "/.cargo/env"
+rustup target add x86_64-unknown-linux-gnu
 
-## Extract and enter source
-mkdir /io/tmp && cd /io/tmp
-
-## Clone Themisto
-git clone https://github.com/tmaklin/Themisto
 cd Themisto
-git checkout ${VER}
-git submodule update --init --recursive
 
 ## Specify target for cargo
 mkdir -p ggcat/.cargo
@@ -55,12 +69,11 @@ mv Makefile.tmp ggcat/crates/capi/ggcat-cpp-api/Makefile
 cd build
 cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
       -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" \
+      -DCMAKE_C_COMPILER=$CC \
+      -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_BUILD_TYPE=Release \
       -DROARING_DISABLE_NATIVE=ON \
       -DMAX_KMER_LENGTH=31 ..
-
-. "/.cargo/env"
-rustup target add x86_64-unknown-linux-gnu
 
 make VERBOSE=1 -j
 
