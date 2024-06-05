@@ -10,20 +10,26 @@ if [[ -z $VER ]]; then
   exit;
 fi
 
+## Install git and gcc-10
+yum -y install git devtoolset-10-gcc.x86_64
+
+## Change hbb environment to use gcc-10
+sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
+mv --force /hbb/activate_func_10.sh /hbb/activate_func.sh
+
 # Activate Holy Build Box environment.
 source /hbb_exe/activate
 export LDFLAGS="-L/lib64 -static-libstdc++"
 set -x
 
-yum -y install git
-
 ## Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 chmod +x rustup.sh
-export CARGO_HOME="/.cargo"
-export RUSTUP_HOME="/.rustup"
+export CARGO_HOME="$HOME/.cargo"
+export RUSTUP_HOME="$HOME/.rustup"
 ./rustup.sh -y --default-toolchain stable --profile minimal
-. "$CARGO_HOME/env"
+. "$HOME/.cargo/env"
+rustup target add x86_64-unknown-linux-gnu
 
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
@@ -34,9 +40,17 @@ cd Themisto
 git checkout ${VER}
 git submodule update --init --recursive
 
+echo "[build]" >> ggcat/.cargo/config.toml
+echo "target = \"x86_64-unknown-linux-gnu\"" >> ggcat/.cargo/config.toml
+
 # compile
 cd build
-cmake -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" -DCMAKE_BUILD_TYPE=Release -DMAX_KMER_LENGTH=31 ..
+cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
+      -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DROARING_DISABLE_NATIVE=ON \
+      -DMAX_KMER_LENGTH=31 ..
+
 make VERBOSE=1 -j
 
 # gather the stuff to distribute
