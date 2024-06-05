@@ -11,7 +11,7 @@ if [[ -z $VER ]]; then
 fi
 
 ## Install git and gcc-10
-yum -y install git devtoolset-10-gcc.x86_64
+yum -y install git devtoolset-10-*
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
