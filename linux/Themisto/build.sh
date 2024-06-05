@@ -12,7 +12,7 @@ if [[ -z $VER ]]; then
 fi
 
 ## Install git and gcc-10
-yum -y install devtoolset-10-*
+yum -y install devtoolset-10-* libcurl-devel openssl-devel
 yum -y update
 yum -y install git
 
