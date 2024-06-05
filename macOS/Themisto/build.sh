@@ -19,6 +19,8 @@ fi
 apt update
 apt install -y cmake git libomp5 libomp-dev curl
 
+rustup default stable
+
 mkdir /io/tmp
 cd /io/tmp
 
