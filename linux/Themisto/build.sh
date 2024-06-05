@@ -12,7 +12,7 @@ if [[ -z $VER ]]; then
 fi
 
 ## Install git and gcc-10
-yum -y install devtoolset-10-*
+yum -y install git devtoolset-10-*
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
@@ -24,11 +24,8 @@ export LDFLAGS="-L/lib64 -static-libstdc++"
 set -x
 
 ## Setup paths so cmake finds the correct toolchain
-export PATH="/opt/rh/devtoolset-10/root/usr/bin":$PATH
 export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
 export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
-
-yum -y install git
 
 ## Setup rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
