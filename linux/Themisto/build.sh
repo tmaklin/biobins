@@ -12,7 +12,9 @@ if [[ -z $VER ]]; then
 fi
 
 ## Install git and gcc-10
-yum -y install git devtoolset-10-*
+yum -y install devtoolset-10-*
+yum -y update
+yum -y install git
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
@@ -30,10 +32,10 @@ export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
 ## Setup rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 chmod +x rustup.sh
-export CARGO_HOME="$HOME/.cargo"
-export RUSTUP_HOME="$HOME/.rustup"
+export CARGO_HOME="/.cargo"
+export RUSTUP_HOME="/.rustup"
 ./rustup.sh -y --default-toolchain stable --profile minimal
-. "$HOME/.cargo/env"
+. "/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
 
 ## Extract and enter source
