@@ -40,6 +40,7 @@ cd Themisto
 git checkout ${VER}
 git submodule update --init --recursive
 
+mkdir -p ggcat/.cargo
 echo "[build]" >> ggcat/.cargo/config.toml
 echo "target = \"x86_64-unknown-linux-gnu\"" >> ggcat/.cargo/config.toml
 
