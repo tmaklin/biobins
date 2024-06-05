@@ -23,6 +23,8 @@ export LDFLAGS="-L/lib64 -static-libstdc++"
 set -x
 
 export PATH="/opt/rh/devtoolset-10/root/usr/bin":$PATH
+export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
+export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
 
 ## Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
