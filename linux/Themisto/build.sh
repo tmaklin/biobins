@@ -15,6 +15,8 @@ mkdir /io/tmp && cd /io/tmp
 
 yum -y install git
 
+source /hbb_exe/activate
+
 ## Clone Themisto
 git clone https://github.com/tmaklin/Themisto
 cd Themisto
