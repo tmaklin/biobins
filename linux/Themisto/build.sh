@@ -51,6 +51,9 @@ mkdir -p ggcat/.cargo
 echo "[build]" >> ggcat/.cargo/config.toml
 echo "target = \"x86_64-unknown-linux-gnu\"" >> ggcat/.cargo/config.toml
 
+sed 's/target\/release/target\/x86_64-unknown-linux-gnu\/release/g' ggcat/crates/capi/ggcat-cpp-api/Makefile > Makefile.tmp
+mv Makefile.tmp ggcat/crates/capi/ggcat-cpp-api/Makefile
+
 ## Compile
 cd build
 cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
