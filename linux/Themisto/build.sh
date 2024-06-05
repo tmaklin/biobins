@@ -42,7 +42,7 @@ rustup target add x86_64-unknown-linux-gnu
 mkdir /io/tmp && cd /io/tmp
 
 ## Clone Themisto
-git clone https://github.com/tmaklin/Themisto
+git clone http://github.com/tmaklin/Themisto
 cd Themisto
 git checkout ${VER}
 git submodule update --init --recursive
