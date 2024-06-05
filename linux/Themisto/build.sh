@@ -21,7 +21,7 @@ yum -y install git
 mkdir /io/tmp && cd /io/tmp
 
 export PATH="/usr/bin:"$PATH
-git clone https://github.com/algbio/Themisto
+git clone https://github.com/tmaklin/Themisto
 cd Themisto
 git checkout ${VER}
 git submodule update --init --recursive
