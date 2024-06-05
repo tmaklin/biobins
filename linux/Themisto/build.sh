@@ -13,27 +13,9 @@ fi
 
 mkdir /io/tmp && cd /io/tmp
 
-yum -y install git
-
-source /hbb_exe/activate
-
-## Clone Themisto
-git clone https://github.com/tmaklin/Themisto
-cd Themisto
-git checkout ${VER}
-git submodule update --init --recursive
-cd build
-cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
-      -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DROARING_DISABLE_NATIVE=ON \
-      -DMAX_KMER_LENGTH=31 ..
-
 ## Install git and gcc-10
 yum -y install devtoolset-10-*
 yum -y update
-
-cd ../../
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
@@ -48,6 +30,9 @@ set -x
 export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
 export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
 
+yum -y install curl libcurl-devel
+yum -y install git
+
 ## Setup rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 chmod +x rustup.sh
@@ -57,22 +42,22 @@ export RUSTUP_HOME="/.rustup"
 . "/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
 
+## Clone Themisto
+git clone https://github.com/tmaklin/Themisto
 cd Themisto
+git checkout ${VER}
+git submodule update --init --recursive
 
-## Specify target for cargo
+## Specify ggcat target architectures
 mkdir -p ggcat/.cargo
 echo "[build]" >> ggcat/.cargo/config.toml
 echo "target = \"x86_64-unknown-linux-gnu\"" >> ggcat/.cargo/config.toml
-
-sed 's/target\/release/target\/x86_64-unknown-linux-gnu\/release/g' ggcat/crates/capi/ggcat-cpp-api/Makefile > Makefile.tmp
+sed 's/target\/release/target\/x86_64-unknown-linux-gnu\/release/g' ggcat/crates/capi/ggcat-cpp-api/Makefile | sed 's/fPIE/fPIE -march=x86-64 -mtune=generic -m64 -fPIC/g' > Makefile.tmp
 mv Makefile.tmp ggcat/crates/capi/ggcat-cpp-api/Makefile
 
-## Compile
 cd build
 cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
       -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -m64" \
-      -DCMAKE_C_COMPILER=$CC \
-      -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_BUILD_TYPE=Release \
       -DROARING_DISABLE_NATIVE=ON \
       -DMAX_KMER_LENGTH=31 ..
