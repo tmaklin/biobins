@@ -11,17 +11,10 @@ if [[ -z $VER ]]; then
   exit;
 fi
 
-yum -y install git
-
-## Clone Themisto
-git clone https://github.com/tmaklin/Themisto
-cd Themisto
-git checkout ${VER}
-git submodule update --init --recursive
-cd ../
-
 ## Install git and gcc-10
-yum -y install devtoolset-10-*
+yum -y install devtoolset-10-* libcurl-devel openssl-devel
+yum -y update
+yum -y install git
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
@@ -42,13 +35,15 @@ chmod +x rustup.sh
 export CARGO_HOME="/.cargo"
 export RUSTUP_HOME="/.rustup"
 ./rustup.sh -y --default-toolchain stable --profile minimal
-. "/.cargo/env"
-rustup target add x86_64-unknown-linux-gnu
 
 ## Extract and enter source
-mkdir /io/tmp
-mv Themisto /io/tmp/Themisto
-cd /io/tmp/Themisto
+mkdir /io/tmp && cd /io/tmp
+
+## Clone Themisto
+git clone https://github.com/tmaklin/Themisto
+cd Themisto
+git checkout ${VER}
+git submodule update --init --recursive
 
 ## Specify target for cargo
 mkdir -p ggcat/.cargo
@@ -57,6 +52,9 @@ echo "target = \"x86_64-unknown-linux-gnu\"" >> ggcat/.cargo/config.toml
 
 sed 's/target\/release/target\/x86_64-unknown-linux-gnu\/release/g' ggcat/crates/capi/ggcat-cpp-api/Makefile > Makefile.tmp
 mv Makefile.tmp ggcat/crates/capi/ggcat-cpp-api/Makefile
+
+. "/.cargo/env"
+rustup target add x86_64-unknown-linux-gnu
 
 ## Compile
 cd build
