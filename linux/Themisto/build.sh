@@ -46,9 +46,9 @@ export RUSTUP_HOME="/.rustup"
 rustup target add x86_64-unknown-linux-gnu
 
 ## Extract and enter source
-mkdir /io/tmp && cd /io/tmp
-
-cd Themisto
+mkdir /io/tmp
+mv Themisto /io/tmp/Themisto
+cd /io/tmp/Themisto
 
 ## Specify target for cargo
 mkdir -p ggcat/.cargo
