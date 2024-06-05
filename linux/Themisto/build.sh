@@ -17,6 +17,14 @@ set -x
 
 yum -y install git
 
+## Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
+chmod +x rustup.sh
+export CARGO_HOME="/.cargo"
+export RUSTUP_HOME="/.rustup"
+./rustup.sh -y --default-toolchain stable --profile minimal
+. "$CARGO_HOME/env"
+
 # Extract and enter source
 mkdir /io/tmp && cd /io/tmp
 
