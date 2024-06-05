@@ -11,10 +11,17 @@ if [[ -z $VER ]]; then
   exit;
 fi
 
-## Install git and gcc-10
-yum -y install devtoolset-10-* libcurl-devel openssl-devel
-yum -y update
 yum -y install git
+
+## Clone Themisto
+git clone https://github.com/tmaklin/Themisto
+cd Themisto
+git checkout ${VER}
+git submodule update --init --recursive
+cd ../
+
+## Install git and gcc-10
+yum -y install devtoolset-10-*
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
@@ -41,11 +48,7 @@ rustup target add x86_64-unknown-linux-gnu
 ## Extract and enter source
 mkdir /io/tmp && cd /io/tmp
 
-## Clone Themisto
-git clone http://github.com/tmaklin/Themisto
 cd Themisto
-git checkout ${VER}
-git submodule update --init --recursive
 
 ## Specify target for cargo
 mkdir -p ggcat/.cargo
