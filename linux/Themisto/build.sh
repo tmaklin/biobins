@@ -12,9 +12,7 @@ if [[ -z $VER ]]; then
 fi
 
 ## Install git and gcc-10
-yum -y install devtoolset-10-* libcurl-devel openssl-devel
-yum -y update
-yum -y install git
+yum -y install git devtoolset-10-*
 
 ## Change hbb environment to use gcc-10
 sed 's/DEVTOOLSET_VERSION=9/DEVTOOLSET_VERSION=10/g' /hbb/activate_func.sh > /hbb/activate_func_10.sh
@@ -53,9 +51,6 @@ echo "target = \"x86_64-unknown-linux-gnu\"" >> ggcat/.cargo/config.toml
 sed 's/target\/release/target\/x86_64-unknown-linux-gnu\/release/g' ggcat/crates/capi/ggcat-cpp-api/Makefile > Makefile.tmp
 mv Makefile.tmp ggcat/crates/capi/ggcat-cpp-api/Makefile
 
-. "/.cargo/env"
-rustup target add x86_64-unknown-linux-gnu
-
 ## Compile
 cd build
 cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
@@ -63,6 +58,9 @@ cmake -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -m64" \
       -DCMAKE_BUILD_TYPE=Release \
       -DROARING_DISABLE_NATIVE=ON \
       -DMAX_KMER_LENGTH=31 ..
+
+. "/.cargo/env"
+rustup target add x86_64-unknown-linux-gnu
 
 make VERBOSE=1 -j
 
